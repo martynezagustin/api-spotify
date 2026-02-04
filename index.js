@@ -3,6 +3,7 @@ const { resolve } = require('path');
 const dotenv = require('dotenv');
 dotenv.config();
 const mongoSanitize = require('./middlewares/sanitizeQueries.js');
+const connectDB = require('./config/connectDB.js')
 
 const app = express();
 const port = 3010;
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 async function startServer() {
   try {
+    await connectDB()
     app.use('/api/users', userRoutes);
     app.get('/', (req, res) => {
       res.sendFile(resolve(__dirname, 'pages/index.html'));
