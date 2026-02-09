@@ -14,7 +14,9 @@ const UserValidator = Joi.object({
         'La contraseña debe tener una mayúscula y un número.',
     }),
   birthday: Joi.date().iso().max('now').required(),
-  username: Joi.string().min(5).max(20).required(),
+  username: Joi.string().min(5).max(20).required().messages({
+    'string.min': 'Debes, al menos, ingresar cinco caracteres.',
+  }),
 });
 
 module.exports = { UserValidator };
