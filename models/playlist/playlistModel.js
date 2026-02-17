@@ -1,9 +1,14 @@
-const Joi = require('Joi');
-Joi.objectId = require('joi-objectid')(Joi);
+const mongoose = require('mongoose')
 
-const PlaylistSchema = Joi.object({
-  name: Joi.string().min(3).max(40).required(),
-  ownerUser: Joi.objectId().required(),
-});
+const PlaylistSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    ownerUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    isPublic: { type: Boolean, default: false },
+    tracks: [{
+        track: { type: mongoose.Schema.Types.ObjectId, ref: 'Track' },
+        addedAt: { type: Date, default: Date.now }
+    }
+    ]
+}, { timestamps: true });
 
-module.exports = { PlaylistSchema };
+module.exports = mongoose.model('Playlist', PlaylistSchema)

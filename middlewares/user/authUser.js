@@ -4,7 +4,6 @@ const User = require('../../models/user/userModel')
 
 const authUser = async (req, res, next) => {
   const token = req.cookies.token
-  console.log('Token?', token)
   if (!token) {
     return res.status(401).json({ message: 'Unhautorized.' })
   }

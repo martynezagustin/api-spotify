@@ -9,6 +9,7 @@ const userService = {
     try {
       const { error, value } = UserValidator.validate(data, { abortEarly: false });
       if (error) {
+        console.error('Error de validación:', error.details[0].message);
         return { error: error.details[0].message, code: 400 };
       }
       const exists = await User.findOne({
@@ -30,7 +31,6 @@ const userService = {
         password: hashedPassword,
       });
       await newUser.save();
-      console.log('Usuario creado con éxito 🟢');
       return newUser._id;
     } catch (err) {
       return { error: err, code: 500 };
@@ -44,10 +44,10 @@ const userService = {
 
       //2️⃣ Hay que ver si la contraseña es correcta
       const isMatch = await bcrypt.compare(password, user.password)
-      if (!isMatch) return { error: 'Contraseña incorrecta. Vuelva a intentarlo.', code: 400 }
+      if (!isMatch) return { error: 'Usuario o contraseña incorrectos. Vuelva a intentarlo.', code: 400 }
 
       //3️⃣ Crear y firmar token
-      const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: '1h' })
+      const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: '1h', issuer: 'api-spotify-clone' })
 
       return { token, user: { _id: user._id } }
     } catch (err) {
@@ -56,7 +56,7 @@ const userService = {
   },
   getUser: async function (id) {
     try {
-      const user = await User.findById(id)
+      const user = await User.findById(id).select('-password')
       if (!user) return errorUsers.userNotFound
       return user
     } catch (err) {
@@ -65,7 +65,6 @@ const userService = {
   },
   updateUser: async function (id, data) {
     try {
-      console.log('La data', data)
       const updatedUser = await User.findByIdAndUpdate(id, {...data}, { new: true })
       if (!updatedUser) return errorUsers.userNotFound
       return updatedUser

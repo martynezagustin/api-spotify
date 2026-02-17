@@ -1,15 +1,37 @@
-const Joi = require('joi');
-Joi.objectId = require('joi-objectid')(Joi);
+const mongoose = require('mongoose')
 
-const ArtistSchema = Joi.object({
-  artistName: Joi.string().min(2).max(55).required,
-  bio: Joi.string().min(15).max(900).required(),
-  verified: Joi.boolean().optional(),
-  geo: {
-    city: Joi.string().min(2).required,
-    stateOrProvince: Joi.string().min(2).required(),
-    country: Joi.string().min(2).required(),
-  },
-});
+const ArtistModel = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        unique: true,
+        required: true
+    },
+    artistName: {type: String, required: true},
+    bio: {type: String},
+    genres: [{type: String, enum: ['Rock',
+            'Pop',
+            'Indie',
+            'Jazz',
+            'Trap',
+            'R&B',
+            'Hip-hop',
+            'Reggaetón',
+            'Blues',
+            'Electrónica',
+            'Folklore',
+            'Salsa',
+            'Funk',
+            'Reggae',
+            'Clásico',
+            'Flamenco',
+            'Heavy Metal'], required: true}],
+    verified: {type: Boolean},
+    geo: {
+        city: {type: String},
+        stateOrProvince: {type: String},
+        country: {type: String},
+    },
+})
 
-module.exports = { ArtistSchema };
+module.exports = mongoose.model('Artist', ArtistModel)
