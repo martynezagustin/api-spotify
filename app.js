@@ -14,6 +14,8 @@ const userRoutes = require('./routes/user/userRoutes.js');
 const playlistRoutes = require('./routes/playlist/playlistRoutes.js')
 const artistRoutes = require('./routes/artist/artistRoutes.js')
 const trackRoutes = require('./routes/track/trackRoutes.js')
+const likeRoutes = require('./routes/track/stats/like/likeRoutes.js')
+const followerRoutes = require('./routes/artist/stats/follower/followerRoutes.js')
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -26,6 +28,8 @@ app.use('/', userRoutes);
 app.use('/', playlistRoutes)
 app.use('/', artistRoutes)
 app.use('/', trackRoutes)
+app.use('/', likeRoutes)
+app.use('/', followerRoutes)
 app.get('/', (req, res) => {
   res.sendFile(resolve(__dirname, 'pages/index.html'));
 });

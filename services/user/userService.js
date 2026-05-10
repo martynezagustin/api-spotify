@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const { UserValidator } = require('../../models/user/userValidator.js');
 const jwt = require('jsonwebtoken')
 const User = require('../../models/user/userModel.js');
+const validateLogin = require('../../services/security/login/validateLogin.js')
 const errorUsers = require('../../helpers/errors/users/handleErrorUsers.js');
 
 const userService = {
@@ -36,7 +37,7 @@ const userService = {
       return { error: err, code: 500 };
     }
   },
-  loginUser: async function (username, password) {
+  loginUser: async function (username, password, req, res) /*nunca req,res en un servicio, pero en este caso sí para req.headers e IP*/ {
     try {
       //1️⃣ el primer paso es que el usuario exista
       const user = await User.findOne({ username })
@@ -45,6 +46,9 @@ const userService = {
       //2️⃣ Hay que ver si la contraseña es correcta
       const isMatch = await bcrypt.compare(password, user.password)
       if (!isMatch) return { error: 'Usuario o contraseña incorrectos. Vuelva a intentarlo.', code: 400 }
+
+      const validate = await validateLogin.attempsToLogin(user.username, req.ip, req.headers['user-agent'])
+      if(validate.error) return {error: validate.error, code: validate.code}
 
       //3️⃣ Crear y firmar token
       const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: '1h', issuer: 'api-spotify-clone' })

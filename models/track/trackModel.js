@@ -23,7 +23,8 @@ const TrackSchema = {
             'Clásico',
             'Flamenco',
             'Heavy Metal'], required: true
-    }
+    },
+    likesCount: {type: Number}
 }
 
 module.exports = mongoose.model('Track', TrackSchema)

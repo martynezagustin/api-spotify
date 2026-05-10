@@ -20,7 +20,7 @@ afterAll(async () => {
 
 describe('User API endpoints', () => {
     it('should create a new user in fake DB', async () => {
-        const res = await request(app).post('/create-user').send({
+        const res = await request(app).post('/users').send({
             name: 'Julián',
             lastname: 'Carranza',
             email: 'juliancarranza@example.com',

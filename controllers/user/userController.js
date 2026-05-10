@@ -14,7 +14,7 @@ const userController = {
   loginUser: async function (req, res, next) {
     try {
       const { username, password } = req.body
-      const request = await userService.loginUser(username, password)
+      const request = await userService.loginUser(username, password, req,res)
       if (request.error) return res.status(request.code).json({ message: request.error })
 
       //creamos la cookie

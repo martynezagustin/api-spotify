@@ -32,6 +32,7 @@ const ArtistModel = new mongoose.Schema({
         stateOrProvince: {type: String},
         country: {type: String},
     },
+    followersCount: {type: Number}
 })
 
 module.exports = mongoose.model('Artist', ArtistModel)

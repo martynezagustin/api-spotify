@@ -2,30 +2,17 @@ const mongoose = require('mongoose')
 const { MongoMemoryServer } = require('mongodb-memory-server')
 const app = require('../app')
 const request = require('supertest')
+const { createTestUser } = require('./helpers')
 
 let mongoServer
-let userToken
+let cookie
 
 beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create()
     await mongoose.connect(mongoServer.getUri())
-
     // 1️⃣ Crear un usuario para obtener el token
-    const userRegister = await request(app).post('/create-user').send({
-        name: 'TestName',
-        lastname: 'TestLastname',
-        email: 'testemail@test.com',
-        username: 'test_user',
-        password: 'TestPassword123!',
-        birthday: '1990-01-01'
-    })
+    cookie = (await createTestUser(app)).cookie
 
-    const userLogin = await request(app).post('/login').send({
-        username: 'test_user',
-        password: 'TestPassword123!'
-    })
-
-    userToken = userLogin.header['set-cookie']
 })
 
 afterAll(async () => {
@@ -36,7 +23,7 @@ afterAll(async () => {
 
 describe('Artist API endpoints', () => {
     it('should create a new artist and get that profile in fake DB', async () => {
-        const res = await request(app).post('/create-artist').set('Cookie', userToken).send({
+        const res = await request(app).post('/artists').set('Cookie', cookie).send({
             artistName: 'Test Artist',
             bio: 'This is a test artist bio.',
             genres: ['Rock'],
@@ -60,7 +47,7 @@ describe('Artist API endpoints', () => {
         expect(get.body).toHaveProperty('artistName', 'Test Artist') //expectativa de que el nombre del artista sea el mismo que el que creamos
 
         //acá tratamos de actualizar el usuario
-        const update = await request(app).put(`/artists/${artistId}`).set('Cookie', userToken).send({
+        const update = await request(app).put(`/artists/${artistId}`).set('Cookie', cookie).send({
             artistName: 'Updated Test Artist',
             bio: 'This is an updated test artist bio.'
         })
@@ -69,7 +56,7 @@ describe('Artist API endpoints', () => {
         expect(update.body).toHaveProperty('message', 'Perfil de artista actualizado con éxito.')
 
         //acá eliminamos el artista
-        const deleted = await request(app).delete(`/artists/${artistId}`).set('Cookie', userToken)
+        const deleted = await request(app).delete(`/artists/${artistId}`).set('Cookie', cookie)
         expect(deleted.statusCode).toBe(200)
         expect(deleted.body).toHaveProperty('message', 'Has eliminado tu perfil de artista con éxito.')
     })

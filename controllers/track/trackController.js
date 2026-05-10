@@ -49,13 +49,6 @@ const trackController = {
         } catch (error) {
             next(error)
         }
-    },
-    likeTrack: async function(req,res,next){
-        try {
-            
-        } catch (error) {
-            
-        }
     }
 }
 

@@ -11,7 +11,7 @@ const playlistService = {
             if (error) {
                 return { error: error.details[0].message, code: 400 }
             }
-            const playlistExists = await Playlist.findOne({ name: data.name, ownerUser: id })
+            const playlistExists = await Playlist.exists({ name: data.name, ownerUser: id })
             if (playlistExists) return { error: 'Ya existe una playlist con el mismo nombre.', code: 400 }
 
             const newPlaylist = new Playlist({ ...value, ownerUser: id })
@@ -23,7 +23,7 @@ const playlistService = {
     },
     getPlaylistPublic: async function (id) {
         try {
-            const playlist = await Playlist.findById(id)
+            const playlist = await Playlist.findOne({ _id: id })
             if (!playlist) return { error: 'No se ha encontrado la playlist.', code: 404 }
             return playlist
         } catch (error) {
@@ -52,7 +52,7 @@ const playlistService = {
     },
     deletePlaylist: async function (id, userId) {
         try {
-            const deletedPlaylist = await Playlist.findOneAndDelete({ _id: id, ownerUser: userId })
+            const deletedPlaylist = await Playlist.deleteOne({ _id: id, ownerUser: userId })
             if (!deletedPlaylist) return { error: 'No se ha encontrado la playlist.', code: 404 }
             return deletedPlaylist
         } catch (error) {
@@ -61,14 +61,24 @@ const playlistService = {
     },
     addTrackToPlaylist: async function (playlistId, userId, trackId) {
         try {
-            const track = await Track.exists({_id: trackId}).lean()
-            if(!track) return {error: 'No se ha encontrado el track.', code: 404} 
+            const track = await Track.exists({ _id: trackId }).lean()
+            if (!track) return { error: 'No se ha encontrado el track.', code: 404 }
             const result = await Playlist.updateOne(
-                {_id: playlistId, ownerUser: userId, "tracks.track": {$ne: trackId}},
-                {$push: {tracks: {track: trackId}}})
-            if(result.matchedCount === 0) return {error: 'No se ha encontrado la playlist o no te pertenece.', code: 404}
-            if(result.modifiedCount === 0) return {error: 'El track ya está en la playlist.', code: 400}
-            return {message: '✅ Track agregado a tu playlist.'}
+                { _id: playlistId, ownerUser: userId, "tracks.track": { $ne: trackId } },
+                { $push: { tracks: { track: trackId } } })
+            if (result.matchedCount === 0) return { error: 'No se ha encontrado la playlist o no te pertenece.', code: 404 }
+            if (result.modifiedCount === 0) return { error: 'El track ya está en la playlist.', code: 400 }
+            return { message: '✅ Track agregado a tu playlist.' }
+        } catch (error) {
+            return { error: `Ha ocurrido un error de servidor: ${error}`, code: 500 }
+        }
+    },
+    deleteTrackToPlaylist: async function (playlistId, userId, trackId) {
+        try {
+            const result = await Playlist.updateOne({ _id: playlistId, ownerUser: userId },
+                { $pull: { tracks: { trackId: trackId } } })
+            if (!result) return { error: 'No se halló el track en tu playlist.', code: 404 }
+            return result
         } catch (error) {
             return { error: `Ha ocurrido un error de servidor: ${error}`, code: 500 }
         }
